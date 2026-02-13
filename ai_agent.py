@@ -1,0 +1,130 @@
+conversation_memory = []
+last_topic = None
+def system_prompt(): 
+    return """
+You are an AI knowledge assistant.
+Your job is to understand the user's question
+and decide what action is required.
+Only use available tools.
+"""
+
+def get_user_input():
+    print("Waiting for user input...")
+    return input("User: ")
+def agent_decision(user_input):
+    if "define" in user_input.lower():
+        return "definition_tool"
+    elif "example" in user_input.lower():
+        return "example_tool"
+    else:
+        return "default_tool"
+
+def detect_intent(user_input):
+    user_input = user_input.lower()
+
+    if "define" in user_input or "what is " in user_input:
+        return "definition"     
+    
+    elif "example" in user_input:
+        return "example"
+    
+    elif "exit" in user_input or "quit" in user_input:
+        return "exit"
+    
+    elif "memory" in user_input:
+        return "memory"
+    
+    else:
+        return "unknown"
+
+def extract_topic(user_input):
+    cleaned = user_input.lower()
+
+    for phrase in  ["what is ","define","explain","example","of","?"]:      
+        cleaned = cleaned.replace(phrase,"")
+
+    return cleaned.strip().title()
+        
+
+def definition_tool(topic):
+    print("DEBUG Tool received:", repr(topic))
+    topic = topic.strip().title()
+    definition = {
+        "Ai": "Artificial Intelligence (AI) refers to machines designed to perform tasks that normally require human intelligence.",
+        "Machine Learning": "Machine Learning is a subset of AI where systems learn patterns from data.",
+        "Neural Networks": "Neural Networks are models ins  pired by the human brain used in deep learning."
+    }
+    return definition.get(topic,f"Sorry,I don't have a definiton for {topic}.")
+
+def example_tool(topic):
+    topic = topic.strip().title()
+    examples = {
+        "Ai": "Example: A voice assistant like Siri or Alexa.",
+        "Machine Learning": "Example: Email spam detection.",
+        "Neural Networks": "Example: Image recognition systems."  
+    }
+    return examples.get(topic,f"Sorry,I don't have an  example for {topic}.")
+
+def default_tool(topic):
+    return f"I still learning.Please ask a clearer question"
+
+def show_memory():
+    print("DEBUG Memory contents:", conversation_memory)
+
+    if not conversation_memory:
+        return "No conversation memory yet."
+    
+    history = ""
+    for role,text in conversation_memory:
+        history += f"{role}: {text}\n"
+    return history 
+
+def main():
+    global last_topic
+    print(system_prompt().strip())
+
+    while True:
+        user_input = get_user_input()
+            
+        intent = detect_intent(user_input)
+        print("DEBUG Intend:", repr(intent))
+
+        if intent != "memory":
+            conversation_memory.append(("User",user_input))
+
+
+        topic = extract_topic(user_input)
+
+        if not topic and last_topic:
+            topic = last_topic
+            print (f"DEBUG Using last topic: {repr(topic)}")
+
+        if topic:
+            last_topic = topic                                                                     
+
+        if intent == "definition":
+            print("DEBUG → Entered definition branch") 
+            response = definition_tool(topic)
+
+        elif intent == "example":
+            response = example_tool(topic)
+
+            
+
+        elif intent == "exit":
+            print("Agent:Goodbye") 
+            break
+
+        elif intent == "memory":
+            response = show_memory()
+
+        else:
+            response = "I'm not sure what do you mean.Can you rephrase "
+
+        if intent != "memory":
+              conversation_memory.append(("Agent",response))
+        
+        print("Agent:",response)
+    
+if __name__ == "__main__":
+        main()

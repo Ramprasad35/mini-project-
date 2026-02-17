@@ -1,5 +1,6 @@
 conversation_memory = []
 last_topic = None
+document_text = ""
 def system_prompt(): 
     return """
 You are an AI knowledge assistant.
@@ -21,9 +22,15 @@ def agent_decision(user_input):
 
 def detect_intent(user_input):
     user_input = user_input.lower()
+    
+    if "load document" in user_input:
+        return "load_document"
 
-    if "define" in user_input or "what is " in user_input:
-        return "definition"     
+    elif "document" in user_input:
+        return "document_question"
+    
+    elif "define" in user_input or "what is " in user_input:
+        return "definition"   
     
     elif "example" in user_input:
         return "example"
@@ -33,14 +40,14 @@ def detect_intent(user_input):
     
     elif "memory" in user_input:
         return "memory"
-    
+
     else:
         return "unknown"
 
 def extract_topic(user_input):
     cleaned = user_input.lower()
 
-    for phrase in  ["what is ","define","explain","example","of","?"]:      
+    for phrase in  ["what is ","define","explain","example","of","?" ,"load document", "document"]:      
         cleaned = cleaned.replace(phrase,"")
 
     return cleaned.strip().title()
@@ -79,6 +86,40 @@ def show_memory():
         history += f"{role}: {text}\n"
     return history 
 
+def load_document (filename):
+    global document_text
+
+    try:
+        with open(filename, "r", encoding="utf-8") as file:
+            document_text = file.read()
+            print ("DEBUG -> dOCUMENT LOADED SUCCESFULLY")
+            print("DEBUG ->length:" ,len(document_text))
+        return f"Document '{filename}' loaded successfully."
+    
+    except FileNotFoundError:
+        return "Sorry,I could not find that file ."
+    
+    except Exception as e:
+        print("DEBUG -> ERROR:" , str(e))
+        return f"Error loading document:{str(e)}"
+    
+
+def document_tool(question):
+    global document_text
+    print("DEBUG -> File read",document_text)
+
+    if not document_text:
+        return "No document loaded. Please load a document first."
+
+    question = question.lower()
+
+    if question in document_text.lower():
+        return "I found relevant information in the document."
+
+    else:
+        return "I could not find relevant information in the document."
+
+
 def main():
     global last_topic
     print(system_prompt().strip())
@@ -108,7 +149,6 @@ def main():
 
         elif intent == "example":
             response = example_tool(topic)
-
             
 
         elif intent == "exit":
@@ -117,6 +157,13 @@ def main():
 
         elif intent == "memory":
             response = show_memory()
+
+        elif intent == "load_document":
+              filename = user_input.lower().replace("load document","").strip()
+              response = load_document(filename)
+
+        elif intent == "document_question":
+              response = document_tool(user_input)
 
         else:
             response = "I'm not sure what do you mean.Can you rephrase "

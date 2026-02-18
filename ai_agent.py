@@ -1,6 +1,8 @@
 conversation_memory = []
 last_topic = None
 document_text = ""
+document_chunks = []
+
 def system_prompt(): 
     return """
 You are an AI knowledge assistant.
@@ -40,6 +42,9 @@ def detect_intent(user_input):
     
     elif "memory" in user_input:
         return "memory"
+    
+    elif "last_topic" in user_input:
+        return "last topic"
 
     else:
         return "unknown"
@@ -47,7 +52,7 @@ def detect_intent(user_input):
 def extract_topic(user_input):
     cleaned = user_input.lower()
 
-    for phrase in  ["what is ","define","explain","example","of","?" ,"load document", "document"]:      
+    for phrase in  ["what is ","define","explain","example","of","?" , "document"]:      
         cleaned = cleaned.replace(phrase,"")
 
     return cleaned.strip().title()
@@ -87,11 +92,12 @@ def show_memory():
     return history 
 
 def load_document (filename):
-    global document_text
+    global document_text, document_chunks
 
     try:
         with open(filename, "r", encoding="utf-8") as file:
             document_text = file.read()
+            document_chunks = document_text.split("\n\n")
             print ("DEBUG -> dOCUMENT LOADED SUCCESFULLY")
             print("DEBUG ->length:" ,len(document_text))
         return f"Document '{filename}' loaded successfully."
@@ -105,20 +111,22 @@ def load_document (filename):
     
 
 def document_tool(question):
-    global document_text
+    global document_chunks
     print("DEBUG -> File read",document_text)
 
-    if not document_text:
+    if not document_chunks:
         return "No document loaded. Please load a document first."
 
     question = question.lower()
-
-    if question in document_text.lower():
-        return "I found relevant information in the document."
+    for chunk in document_chunks:
+        if any(word in chunk.lower() for word in question.split()):
+             return f"relavent info found: \n{chunk}"
 
     else:
         return "I could not find relevant information in the document."
-
+    
+def extract_filename(user_input):
+    return user_input.lower().replace("load document","").strip()
 
 def main():
     global last_topic
@@ -159,7 +167,7 @@ def main():
             response = show_memory()
 
         elif intent == "load_document":
-              filename = user_input.lower().replace("load document","").strip()
+              filename = extract_filename(user_input)
               response = load_document(filename)
 
         elif intent == "document_question":
@@ -170,7 +178,7 @@ def main():
 
         if intent != "memory":
               conversation_memory.append(("Agent",response))
-        
+
         print("Agent:",response)
     
 if __name__ == "__main__":

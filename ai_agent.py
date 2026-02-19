@@ -1,3 +1,4 @@
+import re
 conversation_memory = []
 last_topic = None
 document_text = ""
@@ -91,13 +92,27 @@ def show_memory():
         history += f"{role}: {text}\n"
     return history 
 
+def clean_text(text):
+    return re.sub(r"[^\w\s]", "",text.lower())
+
+def chunk_text(text , chunk_size=1):
+    sentences = re.split(r'(?<=[.!?])\s*|\n\n+',text)
+    sentences = [s.strip() for s in sentences if s.strip()]  
+    chunks = [] 
+
+    for i in range(0, len(sentences), chunk_size):
+        chunk = " ".join(sentences[i:i+chunk_size])
+        chunks.append(chunk)
+
+    return chunks 
+
 def load_document (filename):
     global document_text, document_chunks
 
     try:
         with open(filename, "r", encoding="utf-8") as file:
             document_text = file.read()
-            document_chunks = document_text.split("\n\n")
+            document_chunks = chunk_text(document_text)
             print ("DEBUG -> dOCUMENT LOADED SUCCESFULLY")
             print("DEBUG ->length:" ,len(document_text))
         return f"Document '{filename}' loaded successfully."
@@ -112,14 +127,21 @@ def load_document (filename):
 
 def document_tool(question):
     global document_chunks
-    print("DEBUG -> File read",document_text)
+    cleaned_question = clean_text(question)
+    words = cleaned_question.split()
+    print("DEBUG -> File read",document_text) 
+
+    stop_words = ['document', 'what', 'is', 'the', 'a', 'an', 'how', 'why', 'when', 'where']
+
+    keywords = [w for w in words if len(w)>2 and w not in stop_words]
 
     if not document_chunks:
         return "No document loaded. Please load a document first."
 
-    question = question.lower()
+    
     for chunk in document_chunks:
-        if any(word in chunk.lower() for word in question.split()):
+        cleaned_chunk = clean_text(chunk)
+        if any(keyword in cleaned_chunk for keyword in keywords):
              return f"relavent info found: \n{chunk}"
 
     else:
@@ -127,6 +149,7 @@ def document_tool(question):
     
 def extract_filename(user_input):
     return user_input.lower().replace("load document","").strip()
+    
 
 def main():
     global last_topic

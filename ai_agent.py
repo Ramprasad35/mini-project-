@@ -102,11 +102,11 @@ def chunk_text(text , chunk_size=1):
 
     for i in range(0, len(sentences), chunk_size):
         chunk = " ".join(sentences[i:i+chunk_size])
-        chunks.append(chunk)
+        chunks.append(chunk)   
 
     return chunks 
 
-def load_document (filename):
+def load_document (filename): 
     global document_text, document_chunks
 
     try:
@@ -125,7 +125,7 @@ def load_document (filename):
         return f"Error loading document:{str(e)}"
     
 
-def document_tool(question):
+def document_tool(question):    
     global document_chunks
     cleaned_question = clean_text(question)
     words = cleaned_question.split()
@@ -136,13 +136,23 @@ def document_tool(question):
     keywords = [w for w in words if len(w)>2 and w not in stop_words]
 
     if not document_chunks:
-        return "No document loaded. Please load a document first."
-
+        return "No document loaded. Please load a document first."      
+    
+    best_chunk = None 
+    best_score = 0 
     
     for chunk in document_chunks:
         cleaned_chunk = clean_text(chunk)
-        if any(keyword in cleaned_chunk for keyword in keywords):
-             return f"relavent info found: \n{chunk}"
+        chunk_words = cleaned_chunk.split()
+
+        score = sum(1 for keyword in keywords if keyword in chunk_words)
+
+        if score > best_score:
+            best_score = score 
+            best_chunk = chunk 
+
+    if best_chunk and best_score > 0 :
+             return f"relavent info found: \n{best_chunk}"                       
 
     else:
         return "I could not find relevant information in the document."
@@ -150,10 +160,9 @@ def document_tool(question):
 def extract_filename(user_input):
     return user_input.lower().replace("load document","").strip()
     
-
 def main():
     global last_topic
-    print(system_prompt().strip())
+    print(system_prompt().strip()) 
 
     while True:
         user_input = get_user_input()
@@ -162,7 +171,7 @@ def main():
         print("DEBUG Intend:", repr(intent))
 
         if intent != "memory":
-            conversation_memory.append(("User",user_input))
+            conversation_memory.append(("User",user_input))             
 
 
         topic = extract_topic(user_input)
@@ -175,7 +184,7 @@ def main():
             last_topic = topic                                                                     
 
         if intent == "definition":
-            print("DEBUG → Entered definition branch") 
+            print("DEBUG → Entered definition branch")                                   
             response = definition_tool(topic)
 
         elif intent == "example":

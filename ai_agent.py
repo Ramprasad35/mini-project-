@@ -171,7 +171,7 @@ def main():
         print("DEBUG Intend:", repr(intent))
 
         if intent != "memory":
-            conversation_memory.append(("User",user_input))             
+            conversation_memory.append(("User",user_input))
 
 
         topic = extract_topic(user_input)
@@ -181,10 +181,10 @@ def main():
             print (f"DEBUG Using last topic: {repr(topic)}")
 
         if topic:
-            last_topic = topic                                                                     
+            last_topic = topic
 
         if intent == "definition":
-            print("DEBUG → Entered definition branch")                                   
+            print("DEBUG → Entered definition branch")
             response = definition_tool(topic)
 
         elif intent == "example":

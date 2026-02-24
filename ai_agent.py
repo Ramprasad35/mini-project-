@@ -46,7 +46,10 @@ def detect_intent(user_input):
     
     elif "last_topic" in user_input:
         return "last topic"
-
+    
+    elif "image" in user_input and (".jpg" in user_input or ".png" in user_input):
+        return "vision"
+           
     else:
         return "unknown"
 
@@ -204,6 +207,11 @@ def main():
 
         elif intent == "document_question":
               response = document_tool(user_input)
+
+        elif intent == "vision":
+            image_path = user_input.lower().replace("analyze image", "") .replace("vision", "").replace("image", "").strip()
+            response = vision_tool(image_path)
+    
 
         else:
             response = "I'm not sure what do you mean.Can you rephrase "

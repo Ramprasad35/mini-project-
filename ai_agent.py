@@ -128,7 +128,7 @@ def load_document (filename):
         return f"Error loading document:{str(e)}"
     
 
-def document_tool(question):    
+def document_tool(question):
     global document_chunks
     cleaned_question = clean_text(question)
     words = cleaned_question.split()

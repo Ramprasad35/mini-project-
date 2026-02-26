@@ -1,3 +1,4 @@
+from  tools.vision_tool import vision_tool
 import re
 conversation_memory = []
 last_topic = None
@@ -47,11 +48,14 @@ def detect_intent(user_input):
     elif "last_topic" in user_input:
         return "last topic"
     
-    elif "image" in user_input and (".jpg" in user_input or ".png" in user_input):
+    
+
+    elif user_input.lower().startswith("image ") or \
+         user_input.lower().startswith("Analyze image"):
         return "vision"
-           
+
     else:
-        return "unknown"
+        return "unknown"    
 
 def extract_topic(user_input):
     cleaned = user_input.lower()
@@ -156,7 +160,7 @@ def document_tool(question):
 
     if best_chunk and best_score > 0 :
              return f"relavent info found: \n{best_chunk}"                       
-
+ 
     else:
         return "I could not find relevant information in the document."
     
@@ -209,9 +213,18 @@ def main():
               response = document_tool(user_input)
 
         elif intent == "vision":
-            image_path = user_input.lower().replace("analyze image", "") .replace("vision", "").replace("image", "").strip()
+            image_path = user_input.lower()
+            print("DEBUG PATH:", repr(image_path))
+
+            
+            if image_path.startswith("image "):
+                image_path = image_path.replace("image ", "",1).strip()
+
+            elif image_path.startswith("analyze image "):
+                image_path = image_path.replace("analyze image ", "", 1).strip()
+
             response = vision_tool(image_path)
-    
+            
 
         else:
             response = "I'm not sure what do you mean.Can you rephrase "

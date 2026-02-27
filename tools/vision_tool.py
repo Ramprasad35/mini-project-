@@ -49,7 +49,7 @@ def vision_tool(image_path):
              f"This looks like a {label} ." ,
         ]
         
-        opening_sentence = random_choice(phrases)
+        opening_sentence = random.choice(phrases)
 
         return(
                 f"{opening_sentence}.\n"

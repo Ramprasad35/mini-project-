@@ -5,7 +5,7 @@ def vision_tool(image_path):
         if not os.path.exists(image_path):
             return f"Image '{image_path}' not found."
         
-        lower_path = image_path.lower()
+        lower_path = image_path.lower() 
 
         if "cat" in lower_path:
             label = "cat"

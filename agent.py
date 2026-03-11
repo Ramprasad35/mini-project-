@@ -1,3 +1,4 @@
+from db_tool import store_image_result, get_user_images
 from openai import OpenAI 
 from db_tool import store_image_result
 import json 
@@ -19,9 +20,23 @@ tools = [
                 },
                 "required":["user_name", "image_name","label"]
             }
-        }
-    } 
-]
+        }       
+    }
+    {
+    "type":"function",
+    "funtion":{
+        "name":"get_user_images",
+        "description": "Get images uploaded by the user",
+        "parameters":{
+         "type":"object",
+         "properties": {
+          "user_name":{"type":"string"}
+         },
+         "required":["user_name"]
+    }
+    }
+    }
+    ]
 response = client.chat.completions.create(
     model = "gpt-4o-mini",
     messages = [
@@ -39,3 +54,9 @@ if response.choices[0].message.tool_calls:
         arguments["label"],
     )
     print(result)
+
+
+elif tool_call.function.name == "get_user_images":
+    arguments = json.loads(tool_call.function.arguments)
+    result = get_user_images(arguments["user_name"])
+    print(result) 

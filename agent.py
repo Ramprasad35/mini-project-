@@ -1,3 +1,4 @@
+from mcp_server import run_tool 
 from db_tool import store_image_result, get_user_images
 from openai import OpenAI 
 from db_tool import store_image_result
@@ -8,7 +9,7 @@ client = OpenAI()
 tools = [
     {
         "type": "function",
-        "function": {
+        "function" : {
             "name": "store_image_result",
             "description": "Store image recognition result in Neo4j database",
             "parameters": {
@@ -21,10 +22,11 @@ tools = [
                 "required":["user_name", "image_name","label"]
             }
         }       
-    }
+    },
+    
     {
     "type":"function",
-    "funtion":{
+    "function":{
         "name":"get_user_images",
         "description": "Get images uploaded by the user",
         "parameters":{
@@ -41,22 +43,21 @@ response = client.chat.completions.create(
     model = "gpt-4o-mini",
     messages = [
         {"role":"user","content":"Store that Ram uploaded cat.jpg with a label Cat"}
-    ],  
+    ], 
     tools= tools 
 )
+
 if response.choices[0].message.tool_calls:
     tool_call = response.choices[0].message.tool_calls[0]
     arguments = json.loads(tool_call.function.arguments)
                         
-    result = store_image_result(
-        arguments["user_name"],             
-        arguments["image_name"],
-        arguments["label"],
-    )
-    print(result)
+    if tool_call.function.name == "store_image_result":                    
+        result = run_tool(tool_call.function.name,arguments)
+    
 
+    elif tool_call.function.name == "get_user_images":
+        arguments = json.loads(tool_call.function.arguments)
+        result = run_tool(tool_call.function.name,arguments)
 
-elif tool_call.function.name == "get_user_images":
-    arguments = json.loads(tool_call.function.arguments)
-    result = get_user_images(arguments["user_name"])
+    
     print(result) 

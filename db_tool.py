@@ -27,4 +27,18 @@ def get_user_images(user_name):
             user_name=user_name
         )         
         images = [record["image_name"]for record in result]
-        return images                                   
+        return images  
+
+def get_all_users():
+    with driver.session() as session:
+        result = session.run(
+            """
+            MATCH(u:User)
+            RETURN u.name AS user_name 
+            """
+        )
+        users = [record["user_name"]for record in result]
+        return users
+
+
+

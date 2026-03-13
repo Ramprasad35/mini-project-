@@ -12,10 +12,10 @@ tools = [
         "function" : {
             "name": "store_image_result",
             "description": "Store image recognition result in Neo4j database",
-            "parameters": {
+            "parameters": {                                   
                 "type": "object",
                 "properties": {
-                    "user_name": {"type": "string"},
+                    "user_name": {"type": "string"}, 
                     "image_name": {"type":"string"},
                     "label":{"type":"string"}
                 },
